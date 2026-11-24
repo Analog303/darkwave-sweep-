@@ -9,6 +9,7 @@
 Darkwave sweeps address ranges, fingerprints every open port, matches PHP servers against the PHP2Shell CVEs, builds an RCE channel, escalates to uid 0, plants a hidden root account that survives reboots, hides it with immutable files and cron beacons, clears the traces in the target logs, and exports everything as loot. All of it runs from one self-hosted panel on a single Debian/Ubuntu host. A Stalker/IPTV module and an Artex agent panel ship with it.
 
 No keys, tokens or passwords are baked in. The web password is chosen at install time.
+![Dashboard](darkwave-sweep.png)
 
 ## The pipeline
 
@@ -157,3 +158,4 @@ dwsweep/profiles/     sweep, recon, verify, full
 ## Licenses
 
 Our code is MIT (see `LICENSE`). The ARTEX snapshot under `vendor/` is AGPL-3.0 and shipped unmodified (see `vendor/ARTEX-LICENSE`); if you patch ARTEX and expose it over the network, publish your modified source. masscan and sqlmap are AGPL-3.0 / GPL-2.0 tools invoked as binaries. Details in `NOTICE`. No warranty.
+
