@@ -1,0 +1,10 @@
+[Unit]
+Description=sqlmap feeder
+After=network.target
+[Service]
+Type=simple
+ExecStart=/opt/dwvenv/bin/python /opt/dwsweep/sql_loop.py
+Restart=always
+Nice=12
+[Install]
+WantedBy=multi-user.target

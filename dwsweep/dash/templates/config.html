@@ -1,0 +1,55 @@
+<!doctype html><html><head><meta charset="utf-8"><title>CONFIG</title>
+<style>
+body{margin:0;background:#020604;color:#3bff57;font:13px/1.6 "SF Mono",Menlo,monospace}
+header{padding:12px 16px;border-bottom:1px solid #3bff5744;display:flex;gap:14px;align-items:center}
+h1{font-size:14px;letter-spacing:3px;margin:0}a{color:#3bff57}
+main{padding:16px;max-width:760px}
+label{display:block;color:#3bff5799;font-size:11px;letter-spacing:1px;margin:14px 0 4px}
+input,select{background:#020604;border:1px solid #3bff5755;color:#bfffc0;font:inherit;padding:6px;width:100%}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.btn{background:#3bff57;color:#03170a;border:0;padding:9px 16px;font:700 12px inherit;letter-spacing:2px;cursor:pointer;margin-top:18px}
+.chk{display:flex;gap:24px;margin-top:8px}.chk label{display:flex;gap:6px;align-items:center;color:#bfffc0;font-size:12px;margin:0}.chk input{width:auto}
+.hint{color:#3bff5766;font-size:11px;margin-top:2px}#msg{margin-top:12px;color:#ffd23b}
+</style></head><body>
+<header><h1>▌ CONFIG</h1><a href="/stalker">stalker</a><a href="/">dashboard</a></header>
+<main>
+<label>MODUS</label>
+<select id="mode"><option value="stalker">nur Stalker-Portale erkennen</option><option value="full">voll (Exploits/Vektoren)</option></select>
+<label>RANGES (A-Blöcke, Komma) <span style="color:#3bff5744">z.B. 13,23,34 / oder von-bis</span></label>
+<input id="ranges" placeholder="13,23,34,57">
+<div class="row"><div><label>VON BLOCK</label><input id="from" placeholder="z.B. 100"></div>
+<div><label>BIS BLOCK</label><input id="to" placeholder="z.B. 130"></div>
+<div style="flex:0 0 150px"><button class="btn" style="margin-top:24px" onclick="fillRange()">ÜBERNEHMEN</button></div></div>
+<label>PORTS</label>
+<select id="preset" onchange="setPorts()">
+ <option value="80,8080,8081,8443,8090,8880,25461">stalker-portale</option>
+ <option value="80,443,8080,8443">web klein</option>
+ <option value="80,443,21,22,25,3306,5432,6379,8080,8443,9200,27017">web + db</option>
+ <option value="custom">eigene…</option></select>
+<input id="ports" placeholder="80,8080" style="margin-top:6px">
+<div class="row"><div><label>RATE (pps)</label><input id="rate" type="number" value="8000"></div>
+<div><label>WORKER</label><input id="workers" type="number" value="100"></div></div>
+<div class="chk">
+ <label><input id="exploit" type="checkbox"> exploits</label>
+ <label><input id="brute" type="checkbox"> brute force</label>
+ <label><input id="artex" type="checkbox"> artex feed push</label>
+ <label><input id="restart" type="checkbox" checked> dienste neu starten</label>
+</div>
+<div class="hint">stalker-modus = nur detection + probe, keine shell-versuche.</div>
+<button class="btn" onclick="save()">SPEICHERN</button> <span id="msg"></span>
+</main>
+<script>
+async function load(){const c=await (await fetch('/api/config')).json();
+ mode.value=c.mode||'stalker'; ranges.value=c.ranges||''; ports.value=c.ports||'';
+ rate.value=c.rate||8000; workers.value=c.workers||100;
+ exploit.checked=!!c.exploit; brute.checked=!!c.brute; artex.checked=!!c.artex; restart.checked=true;}
+function setPorts(){const p=preset.value;if(p!=='custom')ports.value=p}
+function fillRange(){const a=+from.value,b=+to.value;if(!a||!b||b<a)return;
+ const out=[];for(let i=a;i<=b;i++)out.push(i);ranges.value=out.join(',')}
+async function save(){const body={mode:mode.value,ranges:ranges.value.replace(/\s/g,''),
+ ports:ports.value,rate:+rate.value,workers:+workers.value,exploit:exploit.checked,
+ brute:brute.checked,artex:artex.checked,restart:restart.checked};
+ const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ document.getElementById('msg').textContent=r.ok?'gespeichert':'fehler';}
+load();
+</script></body></html>

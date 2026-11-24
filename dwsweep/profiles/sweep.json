@@ -1,0 +1,3 @@
+{"verify": false, "exploit": true, "exploit_on": "vulnerable",
+ "deploy": true, "provision": true, "patch": true, "wipe_logs": true,
+ "cleanup": true, "workers": 1, "timeout": 18, "mib": 2}

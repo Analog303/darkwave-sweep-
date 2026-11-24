@@ -1,0 +1,83 @@
+<!doctype html><html><head><meta charset="utf-8"><title>PLAYER {{ mac }}</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#020604;color:#3bff57;font:12px/1.5 "SF Mono",Menlo,monospace}
+header{display:flex;gap:14px;align-items:center;padding:10px 14px;border-bottom:1px solid #3bff5744}
+h1{font-size:13px;letter-spacing:2px;margin:0}small{color:#3bff5788}
+main{display:grid;grid-template-columns:230px 1fr 300px;height:calc(100vh - 46px)}
+#bq,#ch{overflow:auto;border-right:1px solid #3bff5711}
+#bq div,#ch div{padding:5px 10px;cursor:pointer;border-bottom:1px solid #3bff5708}
+#bq div:hover,#ch div:hover,#ch div.on{background:#3bff5712}
+#bq b{display:block;color:#3bff5777;font-size:10px;padding:8px 10px;letter-spacing:1px}
+section{display:flex;flex-direction:column;min-width:0}
+video{width:100%;background:#000;flex:1;min-height:0}
+#bar{display:flex;gap:8px;padding:8px;border-top:1px solid #3bff5722;align-items:center}
+#bar input{flex:1;background:#020604;border:1px solid #3bff5744;color:#9dff9d;padding:4px;font:inherit}
+.btn{background:#3bff57;color:#03170a;border:0;padding:5px 10px;font-weight:700;cursor:pointer}
+#msg{color:#ffd23b;font-size:11px;padding:4px 8px;min-height:18px}
+a{color:#3bff57}
+</style></head><body>
+<header><h1>▌ WEBPLAYER</h1><span>{{ mac }}</span><small>{{ portal }} · bis {{ expire }}</small>
+<span style="flex:1"></span><a href="/stalker">zurück</a></header>
+<main>
+<div id="bq"><b>BOUQUETS</b></div>
+<div id="ch"></div>
+<section><video id="v" controls playsinline></video>
+<div id="bar"><input id="u" placeholder="stream url"><button class="btn" onclick="playUrl()">PLAY URL</button>
+<button class="btn" onclick="reloadCh()">↻ SENDER</button></div><div id="msg"></div></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+<script>
+const H="{{ h }}";let cur=null;
+const msg=t=>document.getElementById('msg').textContent=t;
+const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+fetch(`/api/player/${H}/bouquets`).then(r=>r.json()).then(b=>{
+ const box=document.getElementById('bq');
+ if(!b.length){box.insertAdjacentHTML('beforeend','<div>keine Bouquets</div>');return}
+ b.forEach(x=>{const d=document.createElement('div');d.textContent=x.title;d.onclick=()=>loadCh(x);box.appendChild(d)});
+ loadCh(b[0]);
+});
+let curG=null,curPage=0,curTot=0;
+function loadCh(g,page=1){
+ curG=g;curPage=page;
+ document.querySelectorAll('#bq div').forEach(d=>d.classList.toggle('on',d.textContent===g.title));
+ const box=document.getElementById('ch');if(page===1){box.innerHTML='lade…';msg('');}
+ fetch(`/api/player/${H}/channels?genre=${encodeURIComponent(g.id)}&p=${page}`).then(r=>r.json()).then(j=>{
+  if(page===1)box.innerHTML='';
+  curTot=j.total;
+  j.items.forEach(c=>{const d=document.createElement('div');d.textContent=c.name;d.onclick=()=>play(c,d);box.appendChild(d)});
+  const old=document.getElementById('more');if(old)old.remove();
+  if(!box.children.length)box.innerHTML='<div>leer</div>';
+  if(curTot>box.children.length){
+   const m=document.createElement('div');m.id='more';m.style.textAlign='center';
+   m.textContent=`▼ mehr (${box.children.length}/${curTot})`;m.onclick=()=>loadCh(curG,curPage+1);box.appendChild(m);
+  }
+ });
+}
+function reloadCh(){if(curG)loadCh(curG,1)}
+function play(c,d){
+ document.querySelectorAll('#ch div').forEach(x=>x.classList.remove('on'));d.classList.add('on');
+ cur=c;msg('hole link…');
+ fetch(`/api/player/${H}/link?cmd=${encodeURIComponent(c.cmd)}&tmp=${c.tmp||0}&lb=${c.lb||0}&chk=${c.chk||0}`).then(r=>r.json()).then(j=>{
+  if(!j.url){msg('kein Link (Portal gesperrt / Sender offline)');return}
+  if(j.status===456){msg('Portal verweigert Stream (456) – MAC ohne Stream-Recht am Panel');return}
+  if(j.status===512){msg('MAC unbekannt (512)');return}
+  if(j.status===459){msg('Token abgelehnt (459) – Link neu holen');return}
+  if(j.status<0||j.status>=400){msg('Stream antwortet '+j.status);return}
+  document.getElementById('u').value=j.url;start(j.url);
+ });
+}
+function playUrl(){const u=document.getElementById('u').value.trim();if(u)start(u)}
+let mp=null,hl=null;
+function stopAll(){if(mp){try{mp.destroy()}catch(e){}mp=null}if(hl){try{hl.destroy()}catch(e){}hl=null}}
+function start(u){
+ const v=document.getElementById('v');stopAll();
+ if(/\.m3u8(\?|$)/.test(u)&&window.Hls&&Hls.isSupported()){hl=new Hls();hl.loadSource(u);hl.attachMedia(v);v.play().then(()=>msg('läuft (HLS)')).catch(e=>msg(e.message));return}
+ if(window.mpegts&&mpegts.getFeatureList().mseLivePlayback){
+  mp=mpegts.createPlayer({type:/m3u8/.test(u)?'m3u8':'mpegts',isLive:true,url:u},{enableWorker:true,liveBufferLatencyChasing:true});
+  mp.attachMediaElement(v);mp.load();
+  mp.on(mpegts.Events.ERROR,(t,d,det)=>msg('Streamfehler: '+d));
+  v.play().then(()=>msg('läuft (TS)')).catch(e=>msg(e.message));return}
+ v.src=u;v.play().then(()=>msg('läuft (nativ)')).catch(e=>msg('Player: '+e.message));
+}
+</script></body></html>

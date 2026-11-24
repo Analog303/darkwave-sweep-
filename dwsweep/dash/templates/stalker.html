@@ -1,0 +1,84 @@
+<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Cache-Control" content="no-store"><title>STALKER</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:0;background:#020604;color:#3bff57;font:13px/1.5 "SF Mono",Menlo,monospace}
+header{padding:12px 16px;border-bottom:1px solid #3bff5744;display:flex;gap:14px;align-items:center}
+h1{font-size:14px;letter-spacing:3px;margin:0}
+a{color:#3bff57}input,textarea{background:#020604;border:1px solid #3bff5755;color:#bfffc0;font:inherit;padding:5px}
+.btn{background:#3bff57;color:#03170a;border:0;padding:6px 12px;font:700 12px inherit;letter-spacing:1px;cursor:pointer}
+.box{padding:10px 14px;border-bottom:1px solid #3bff5722}
+.g{display:flex;gap:10px;align-items:center;padding:7px 12px;border-bottom:1px solid #3bff5711;cursor:pointer}
+.g:hover{background:#3bff5708}
+.g .n{flex:1;font-weight:700}
+.pill{border:1px solid #3bff5766;padding:0 6px;font-size:11px}
+.de{color:#ffd23b;border-color:#ffd23b88}
+.red{color:#ff5b5b}
+table{border-collapse:collapse;width:100%;font-size:11.5px}
+th,td{border-bottom:1px solid #3bff5711;padding:4px 8px;text-align:left;vertical-align:top}
+th{color:#3bff5788;font-weight:400;letter-spacing:1px}
+.det{background:#031007}
+.mono{color:#9dff9d;word-break:break-all}
+.cats{color:#5cd85c88;font-size:10.5px;max-width:520px}
+</style></head><body>
+<header><h1>STALKER // PORTALE</h1><a href="/">zurück</a><a href="/api/stalker.export" download>ALLE ALS TXT</a></header>
+<div class="box">
+ <input id="p" placeholder="http://portal/c" style="width:300px">
+ <textarea id="l" placeholder="mac|serial|sn|sncut|dev1|dev2|expire" style="width:100%;height:64px;margin-top:6px"></textarea>
+ <button class="btn" onclick="run()">PRÜFEN</button>
+ <input id="np" placeholder="portal hinzufügen (http://host/c)" style="width:260px">
+ <button class="btn" onclick="addPortal()">+ PORTAL</button> <span id="s"></span>
+</div>
+<div id="list"></div>
+<script>
+const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+async function run(){
+ const r=await fetch('/api/stalker.run',{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({portal:document.getElementById('p').value,list:document.getElementById('l').value})});
+ const j=await r.json();document.getElementById('s').textContent=j.count+' MACs laufen…';setTimeout(load,1200);
+}
+async function addPortal(){
+ const p=document.getElementById('np').value.trim(); if(!p)return;
+ await fetch('/api/portals.add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({portal:p})});
+ document.getElementById('np').value=''; setTimeout(load,800);
+}
+async function load(){try{
+ const gs=await (await fetch('/api/stalker.groups?t='+Date.now(),{cache:'no-store'})).json();
+ const el=document.getElementById('list');
+ if(!gs.length){el.innerHTML='<div class="box">noch keine gültigen MACs</div>';return}
+ el.innerHTML=gs.map(g=>{
+  const host=g.portal.replace(/^https?:\/\//,'');
+  return `<div class="g" data-p="${esc(g.portal)}"><span class="n">${esc(host)}</span>
+   ${g.ok?'':`<span class="pill ${g.status==='ok'?'':'red'}">${esc(g.status||'?')}</span><span class="n" style="font-weight:400;color:#3bff5788">${esc(g.note||'')}</span>`}
+   <span class="pill">${g.ok} MACs</span>
+   ${g.german?`<span class="pill de">${g.german} DE</span>`:'<span class="pill">kein DE</span>'}
+   <span class="pill">${g.maxdays??'?'} T max</span>
+   <span class="pill" onclick="event.stopPropagation();scanP('${esc(g.portal)}',this)">SCAN</span>
+   <span class="pill">EXPAND</span></div>
+  <div class="det" hidden></div>`;
+ }).join('');
+ [...el.querySelectorAll('.g')].forEach(g=>g.onclick=()=>toggle(g));
+ }catch(e){document.getElementById('list').textContent='UI-Fehler: '+e.message}
+}
+async function scanP(p,el){el.textContent='läuft…';
+ await fetch('/api/portals.scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({portal:p})});
+ el.textContent='gestartet';setTimeout(load,1500)}
+async function toggle(g){
+ const det=g.nextElementSibling;
+ if(!det.hidden){det.hidden=true;return}
+ if(!det.dataset.loaded){
+  const rows=await (await fetch('/api/stalker.rows?portal='+encodeURIComponent(g.dataset.p))).json();
+  det.innerHTML=`<div style="padding:6px 12px">
+   <a href="/api/stalker.export?portal=${encodeURIComponent(g.dataset.p)}" download>TXT EXPORT (darkwave style)</a>
+   <table><tr><th>MAC</th><th>gültig</th><th>DE</th><th>Sender</th><th>Kat</th><th>VOD</th><th>Daten</th></tr>
+   ${rows.map(r=>`<tr><td class="mono"><a href="/player/${r.h}" target="_blank">${esc(r.mac)}</a></td>
+    <td>${esc(r.expire)}<br><span class="${(r.days??0)<30?'red':''}">${r.days??'?'} T</span></td>
+    <td>${r.german?'<span class="pill de">JA '+r.german_cats+'</span>':'nein'}</td>
+    <td>${r.channels}</td><td>${r.genres}</td><td>${r.vod}</td>
+    <td class="mono">SN ${esc(r.sn)}<br>SNCUT ${esc(r.sncut)}<br>DEV1 ${esc(r.dev1)}<br>DEV2 ${esc(r.dev2)}
+    ${r.genres_list.length?`<div class="cats">${r.genres_list.map(esc).join(' · ')}</div>`:''}</td></tr>`).join('')}
+   </table></div>`;
+  det.dataset.loaded=1;
+ }
+ det.hidden=false;
+}
+load();setInterval(load,10000);
+</script></body></html>

@@ -1,0 +1,2 @@
+{"verify": true, "verify_reps": 3, "exploit": true, "deploy": true,
+ "provision": true, "workers": 6, "timeout": 60}

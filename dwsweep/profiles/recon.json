@@ -1,0 +1,2 @@
+{"verify": false, "exploit": false, "workers": 48, "timeout": 15,
+ "discover_ports": [80, 443, 8080, 8443]}

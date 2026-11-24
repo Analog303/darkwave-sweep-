@@ -1,0 +1,28 @@
+Darkwave Sweep - third-party components
+=======================================
+
+ARTEX (vendor/ARTEX-*.tar.gz, installed to /opt/artex/ARTEX)
+  Upstream: https://github.com/BaaRai/ARTEX
+  License:  GNU AGPL-3.0 (see vendor/ARTEX-LICENSE)
+  Note:     The source snapshot is distributed with this package in unmodified
+            form, so AGPL-3.0 source obligations are met for the bundle. If you
+            modify ARTEX and let users reach it over a network, AGPL-3.0
+            section 13 requires you to offer the modified source to those users.
+            Installed copies keep `vendor/ARTEX-VERSION.txt`; upstream commit and
+            archive checksum are recorded there.
+
+masscan
+  License:  GNU AGPL-3.0
+  Note:     Installed from the distribution packages, invoked as a binary.
+            No masscan source is bundled.
+
+sqlmap
+  License:  GPL-2.0
+  Note:     Installed from the distribution packages, invoked as a binary.
+
+PwnKit (dwsweep/bin/PwnKit, PwnKit.c, PwnKit.b64)
+  Origin:   Qualys security advisory for CVE-2021-4034
+  Note:     Small helper built from the published proof-of-concept source.
+
+Everything else is original Darkwave Sweep code under MIT (see LICENSE).
+This package is provided without warranty.
